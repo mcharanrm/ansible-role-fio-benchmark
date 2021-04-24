@@ -1,0 +1,23 @@
+# fio benchmark parameters for read/write throughput and read/write iops of a disk on running instance
+fiotest_rw_throughput:
+- name: 'write_throughput'
+  rw: 'write'
+- name: 'read_throughput'
+  rw: 'read'
+fiotest_rw_throughput_numjobs: 8
+fiotest_rw_throughput_jobsize: '1G'
+fiotest_rw_throughput_runtime: '60s'
+fiotest_rw_throughput_block_size: '1M'
+fiotest_rw_throughput_iodepth: 64
+
+fiotest_rw_iops:
+- name: 'write_iops'
+  rw: 'randwrite'
+- name: 'read_iops'
+  rw: 'randread'
+fiotest_rw_iops_numjobs: 3
+fiotest_rw_iops_jobsize: '10G'
+fiotest_rw_iops_runtime: '60s'
+fiotest_rw_iops_block_size: '1M'
+fiotest_rw_iops_iodepth: 64
+

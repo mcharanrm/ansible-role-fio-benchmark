@@ -1,0 +1,31 @@
+- name: "Test {{ item.name }} with {{ item.rw }} operation on the disk"
+  shell: |
+    #fiotest data should be less than availale disk free space
+    #
+    mkdir -p {{ fiotest_directory }}
+    i=0
+    while [ "$i" -lt "{{ fiotest_rounds }}" ]; do
+        mkdir -p {{ fiotest_directory }}
+        fio --name={{ item.name }} --directory={{ fiotest_directory }} \
+            --numjobs={{ fiotest_numjobs }} --size={{ fiotest_jobsize }} \
+            --time_based --runtime={{ fiotest_runtime }} --ramp_time=2s --ioengine=libaio --direct=1 \
+            --verify=0 --bs={{ fiotest_block_size }} --iodepth={{ fiotest_iodepth }} \
+            --rw={{ item.rw }} --group_reporting=1 | tee fio_benchmark_{{ item.name }}_round_"$i"_"$(date -u --iso-8601=ns)".log 2>> fio_{{ item.name }}_error.log
+        rm -rf {{ fiotest_directory }}
+        i=$((i+1))
+    done
+  register: fio_rw_results
+
+# To Do:
+# We are now just saving the results into a file and 
+# also printing the same results stdout. If we repeat 
+# the tests for 5 times then we will have 5 individual 
+# fio benchmark results to look into. So we will add 
+# more changes so that it will show the average results
+# of all the fio benchmark runs.
+#
+- name: "Debug the {{ item.name }} results"
+  debug:
+    var: fio_rw_results.stdout_lines
+    verbosity: 0
+
