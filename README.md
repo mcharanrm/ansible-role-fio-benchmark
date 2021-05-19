@@ -72,7 +72,7 @@ fiotest_rw_iops:
 fiotest_rw_iops_numjobs: 3
 fiotest_rw_iops_jobsize: '10G'
 fiotest_rw_iops_runtime: '60s'
-fiotest_rw_iops_block_size: '1M'
+fiotest_rw_iops_block_size: '4K'
 fiotest_rw_iops_iodepth: 64
 ```
 
