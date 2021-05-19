@@ -1,44 +1,23 @@
-- name: "Benchmarking IOPS and throughput of a disk on a running instance"
-  hosts: database 
+- name: "Benchmarking throughput and IOPS of a disk on a running instance"
+  hosts: database
   remote_user: root
   gather_facts: off
   vars:
-    fiotest_directory: '/root/fiotest'
-    fiotest_rounds: 5
+    fio_script_file: '/tmp/run-fio.sh'
+    fio_service_file: '/etc/systemd/system/fio.service'
   tasks:
     - include_vars: roles/run_fio_benchmark/defaults/main.yml
-    
+
     - name: "Install fio, flexible I/O tester"
       yum:
         name: fio
         state: installed
-    
-    - name: "Test write and read throughput of a disk"
-      include_role:
-        name: run_fio_benchmark
-      vars: 
-        fiotest_name: "{{ fiotest_rw_throughput }}"
-        fiotest_numjobs: "{{ fiotest_rw_throughput_numjobs }}"
-        fiotest_jobsize: "{{ fiotest_rw_throughput_jobsize }}"
-        fiotest_runtime: "{{ fiotest_rw_throughput_runtime }}"
-        fiotest_block_size: "{{ fiotest_rw_throughput_block_size }}"
-        fiotest_iodepth: "{{ fiotest_rw_throughput_iodepth }}"
-      loop: "{{ fiotest_name }}"
-      loop_control:
-        label: "{{ item.name }}"
-    
-    - name: "Test write and read IOPS of a disk"
+
+    - name: "Test throughput and IOPs a disk"
       include_role:
         name: run_fio_benchmark
       vars:
-        fiotest_name: "{{ fiotest_rw_iops }}"
-        fiotest_numjobs: "{{ fiotest_rw_iops_numjobs }}"
-        fiotest_jobsize: "{{ fiotest_rw_iops_jobsize }}"
-        fiotest_runtime: "{{ fiotest_rw_iops_runtime }}"
-        fiotest_block_size: "{{ fiotest_rw_iops_block_size }}"
-        fiotest_iodepth: "{{ fiotest_rw_iops_iodepth }}"
-      loop: "{{ fiotest_name }}"
-      loop_control:
-        label: "{{ item.name }}"
-
-
+        fiotest_directory: '/root/fiotest'
+        fiotest_rounds: 5
+        fiotest_retry_attempt: 120
+        fiotest_retry_delay: 60

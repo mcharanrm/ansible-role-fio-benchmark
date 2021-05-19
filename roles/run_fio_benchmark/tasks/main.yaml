@@ -1,31 +1,66 @@
-- name: "Test {{ item.name }} with {{ item.rw }} operation on the disk"
+#deploy required fio benchmark scripts and service files on the target host
+- name: Deploy fio benchmark script file
+  template:
+    src: run_fio_benchmark_sh.j2
+    dest: "{{ fio_script_file }}"
+    force: on
+  register: template_script_result
+
+- name: Deploy fio benchmark service file
+  template:
+    src: run_fio_benchmark_service.j2
+    dest: "{{ fio_service_file }}"
+    force: on
+  register: template_service_result
+
+- name: Start the fio benchmark execution
+  systemd:
+    name: fio
+    state: started
+    daemon_reload: yes
+  register: service_fio_result
+
+- name: Wait for fio benchmark to complete its execution
   shell: |
-    #fiotest data should be less than availale disk free space
-    #
-    mkdir -p {{ fiotest_directory }}
-    i=0
-    while [ "$i" -lt "{{ fiotest_rounds }}" ]; do
-        mkdir -p {{ fiotest_directory }}
-        fio --name={{ item.name }} --directory={{ fiotest_directory }} \
-            --numjobs={{ fiotest_numjobs }} --size={{ fiotest_jobsize }} \
-            --time_based --runtime={{ fiotest_runtime }} --ramp_time=2s --ioengine=libaio --direct=1 \
-            --verify=0 --bs={{ fiotest_block_size }} --iodepth={{ fiotest_iodepth }} \
-            --rw={{ item.rw }} --group_reporting=1 | tee fio_benchmark_{{ item.name }}_round_"$i"_"$(date -u --iso-8601=ns)".log 2>> fio_{{ item.name }}_error.log
-        rm -rf {{ fiotest_directory }}
-        i=$((i+1))
-    done
-  register: fio_rw_results
+    systemctl status fio.service|sed -n '/running/ p'|wc -l
+  register: shell_fio_status_result
+  until: shell_fio_status_result.stdout != "1"
+  retries: "{{ fiotest_retry_attempt }}"
+  delay: "{{ fiotest_retry_delay }}"
 
-# To Do:
-# We are now just saving the results into a file and 
-# also printing the same results stdout. If we repeat 
-# the tests for 5 times then we will have 5 individual 
-# fio benchmark results to look into. So we will add 
-# more changes so that it will show the average results
-# of all the fio benchmark runs.
-#
-- name: "Debug the {{ item.name }} results"
+#print average write/read throughput and average write/read IOPs to stdout
+- name: Get the Write IOPS
+  shell: |
+    cat /tmp/fio_benchmark_write_iops_round_* | sed -n -r -e '/^[[:space:]]+iops/ s/[[:space:]]|iops|://gp'
+  register: shell_fio_write_iops
+
+- name: Get the Read IOPS
+  shell:
+    cat /tmp/fio_benchmark_read_iops_round_* | sed -n -r -e '/^[[:space:]]+iops/ s/[[:space:]]|iops|://gp'
+  register: shell_fio_read_iops
+
+- name: Get the Write Throughput
+  shell:
+    cat /tmp/fio_benchmark_write_throughput_round_* | sed -n -r '/READ|WRITE/ p'|awk -F ',' '{print $2}'
+  register: shell_fio_write_throughput
+
+- name: Get the Read Throughput
+  shell:
+    cat /tmp/fio_benchmark_read_throughput_round_* | sed -n -r '/READ|WRITE/ p'|awk -F ',' '{print $2}'
+  register: shell_fio_read_throughput
+
+- name: Results - Write IOPS of the disk
   debug:
-    var: fio_rw_results.stdout_lines
-    verbosity: 0
+    msg: "{{ shell_fio_write_iops.stdout_lines }}"
 
+- name: Results - Read IOPS of the disk
+  debug:
+    msg: "{{ shell_fio_read_iops.stdout_lines }}"
+
+- name: Results - Write Throughput of the disk
+  debug:
+    msg: "{{ shell_fio_write_throughput.stdout_lines }}"
+
+- name: Results - Read Throughput of the disk
+  debug:
+    msg: "{{ shell_fio_read_throughput.stdout_lines }}"

@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#fio benchmark to measure write and read throughput of a disk
+#on a running instance
+
+#clean old fio test data files
+rm -f /{root,tmp}/fio_benchmark_* >/dev/null 2>&1
+
+{% for item in fiotest_rw_throughput %}
+#fiotest data should be less than availale disk free space
+#
+i=0
+while [ "$i" -lt {{ fiotest_rounds }} ]; do
+  mkdir -p {{ fiotest_directory }}
+  fio --name={{ item.name }} --directory={{ fiotest_directory }} \
+      --numjobs={{ fiotest_rw_throughput_numjobs }} --size={{ fiotest_rw_throughput_jobsize }} \
+      --time_based --runtime={{ fiotest_rw_throughput_runtime }} --ramp_time=2s --ioengine=libaio --direct=1 \
+      --verify=0 --bs={{ fiotest_rw_throughput_block_size }} --iodepth={{ fiotest_rw_throughput_iodepth }} \
+      --rw={{ item.rw }} --group_reporting=1 > /tmp/fio_benchmark_{{ item.name }}_round_"$i"_"$(date -u --iso-8601=ns)".log 2>> fio_{{ item.name }}_error.log
+  rm -rf {{ fiotest_directory }}
+  i=$((i+1))
+done
+
+{% endfor %}
+
+
+{% for item in fiotest_rw_iops %}
+#fiotest data should be less than availale disk free space
+#
+i=0
+while [ "$i" -lt {{ fiotest_rounds }} ]; do
+  mkdir -p {{ fiotest_directory }}
+  fio --name={{ item.name }} --directory={{ fiotest_directory }} \
+      --numjobs={{ fiotest_rw_iops_numjobs }} --size={{ fiotest_rw_iops_jobsize }} \
+      --time_based --runtime={{ fiotest_rw_iops_runtime }} --ramp_time=2s --ioengine=libaio --direct=1 \
+      --verify=0 --bs={{ fiotest_rw_iops_block_size }} --iodepth={{ fiotest_rw_iops_iodepth }} \
+      --rw={{ item.rw }} --group_reporting=1 > /tmp/fio_benchmark_{{ item.name }}_round_"$i"_"$(date -u --iso-8601=ns)".log 2>> fio_{{ item.name }}_error.log
+  rm -rf {{ fiotest_directory }}
+  i=$((i+1))
+done
+
+{% endfor %}

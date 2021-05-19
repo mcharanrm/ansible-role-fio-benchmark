@@ -1,0 +1,8 @@
+[Unit]
+Description="Fio benchmark execution"
+
+[Service]
+ExecStart=/bin/bash {{ fio_script_file }}
+
+[Install]
+WantedBy=local.target
