@@ -21,10 +21,8 @@
   register: service_fio_result
 
 - name: Wait for fio benchmark to complete its execution
-  shell: |
-    systemctl status fio.service|sed -n '/running/ p'|wc -l
-  register: shell_fio_status_result
-  until: shell_fio_status_result.stdout != "1"
+  ansible.builtin.service_facts:
+  until: ansible_facts.services['fio.service']['state'] != "running" 
   retries: "{{ fiotest_retry_attempt }}"
   delay: "{{ fiotest_retry_delay }}"
 
