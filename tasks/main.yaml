@@ -22,7 +22,8 @@
 
 - name: Wait for fio benchmark to complete its execution
   ansible.builtin.service_facts:
-  until: ansible_facts.services is defined and ansible_facts.services['fio.service']['state'] != "running"
+  register: services_state
+  until: services-state.ansible_facts.services is defined and services_state.ansible_facts.services['fio.service'].state != "running"
   retries: "{{ fiotest_retry_attempt }}"
   delay: "{{ fiotest_retry_delay }}"
 
