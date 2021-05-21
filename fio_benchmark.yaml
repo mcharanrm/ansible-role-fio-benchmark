@@ -2,12 +2,7 @@
   hosts: database
   remote_user: root
   gather_facts: off
-  vars:
-    fio_script_file: '/tmp/run-fio.sh'
-    fio_service_file: '/etc/systemd/system/fio.service'
   tasks:
-    - include_vars: roles/run_fio_benchmark/defaults/main.yml
-
     - name: "Install fio, flexible I/O tester"
       yum:
         name: fio

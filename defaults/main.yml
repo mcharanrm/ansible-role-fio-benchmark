@@ -1,3 +1,6 @@
+fio_script_file: '/tmp/run-fio.sh'
+fio_service_file: '/etc/systemd/system/fio.service'
+
 # fio benchmark parameters for read/write throughput and read/write iops of a disk on running instance
 fiotest_rw_throughput:
 - name: 'write_throughput'
@@ -21,3 +24,7 @@ fiotest_rw_iops_runtime: '60s'
 fiotest_rw_iops_block_size: '4K'
 fiotest_rw_iops_iodepth: 64
 
+fiotest_directory: '/root/fiotest'
+fiotest_rounds: 5
+fiotest_retry_attempt: 120
+fiotest_retry_delay: 60
