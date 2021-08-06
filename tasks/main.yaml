@@ -63,3 +63,39 @@
 - name: Results - Read Throughput of the disk
   debug:
     msg: "{{ shell_fio_read_throughput.stdout_lines }}"
+
+- name: Show local direcotry we will be fetching to
+  ansible.builtin.debug:
+    var: fio_store_local_logs_dir
+  run_once: yes
+  when: "fio_store_local_logs_dir|length != 0"
+
+- name: Cleanup local direcotry we will be fetching to
+  ansible.builtin.file:
+    path: "{{ fio_store_local_logs_dir }}"
+    state: absent
+  delegate_to: localhost
+  run_once: yes
+  when: "fio_store_local_logs_dir|length != 0"
+
+- name: Find logs we are going to fetch
+  ansible.builtin.find:
+    paths: /tmp
+    depth: 1
+    file_type: file
+    use_regex: no
+    patterns:
+      - fio_benchmark_write_iops_round_*
+      - fio_benchmark_read_iops_round_*
+      - fio_benchmark_write_throughput_round_*
+      - fio_benchmark_read_throughput_round_*
+  when: "fio_store_local_logs_dir|length != 0"
+  register: find_logs
+
+- name: Fetch sosreport tarballs
+  ansible.builtin.fetch:
+    src: "{{ item.path }}"
+    dest: "{{ fio_store_local_logs_dir }}/{{ inventory_hostname }}/"
+    flat: yes
+  when: "fio_store_local_logs_dir|length != 0"
+  loop: "{{ find_logs.files }}"
