@@ -92,7 +92,7 @@
   when: "fio_store_local_logs_dir|length != 0"
   register: find_logs
 
-- name: Fetch sosreport tarballs
+- name: Fetch fio logs
   ansible.builtin.fetch:
     src: "{{ item.path }}"
     dest: "{{ fio_store_local_logs_dir }}/{{ inventory_hostname }}/"
