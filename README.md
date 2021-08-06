@@ -58,6 +58,9 @@ Check `fio_benchmark.yaml` for example on how to run the playbook.
 * `fiotest_rw_throughput_iodepth` - How many IOs it issues to the OS at any given time
    - variable type: integer
 
+* `fio_store_local_logs_dir` - Set this to directory local on a Ansible controller node if you want to fetch test logs there
+   - variable type: string
+
 
 ### Default variables
 
@@ -65,6 +68,9 @@ Check `fio_benchmark.yaml` for example on how to run the playbook.
 # fio benchmark parameters for write/read throughput and write/read iops of a disk on running instance
 fiotest_directory: '/root/fiotest'
 fiotest_rounds: 5
+
+# By default, do not collect logs
+fio_store_local_logs_dir: ''
 
 fiotest_rw_throughput:
 - name: 'write_throughput'

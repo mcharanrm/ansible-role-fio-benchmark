@@ -1,6 +1,9 @@
 fio_script_file: '/tmp/run-fio.sh'
 fio_service_file: '/etc/systemd/system/fio.service'
 
+# By default, do not collect logs
+fio_store_local_logs_dir: ''
+
 # fio benchmark parameters for read/write throughput and read/write iops of a disk on running instance
 fiotest_rw_throughput:
 - name: 'write_throughput'
