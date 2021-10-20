@@ -15,21 +15,25 @@
 #print average write/read throughput and average write/read IOPs to stdout
 - name: Get the Write IOPS
   shell: |
+    set -o pipefail
     cat /tmp/fio_benchmark_write_iops_round_* | sed -n -r -e '/^[[:space:]]+iops/ s/[[:space:]]|iops|://gp'
   register: shell_fio_write_iops
 
 - name: Get the Read IOPS
   shell:
+    set -o pipefail
     cat /tmp/fio_benchmark_read_iops_round_* | sed -n -r -e '/^[[:space:]]+iops/ s/[[:space:]]|iops|://gp'
   register: shell_fio_read_iops
 
 - name: Get the Write Throughput
   shell:
+    set -o pipefail
     cat /tmp/fio_benchmark_write_throughput_round_* | sed -n -r '/READ|WRITE/ p'|awk -F ',' '{print $2}'
   register: shell_fio_write_throughput
 
 - name: Get the Read Throughput
   shell:
+    set -o pipefail
     cat /tmp/fio_benchmark_read_throughput_round_* | sed -n -r '/READ|WRITE/ p'|awk -F ',' '{print $2}'
   register: shell_fio_read_throughput
 
