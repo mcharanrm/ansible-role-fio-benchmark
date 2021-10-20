@@ -1,0 +1,23 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: "Find logs"
+    ansible.builtin.find:
+      paths: /tmp
+      depth: 1
+      file_type: file
+      use_regex: no
+      patterns:
+        - fio_benchmark_write_iops_round_*
+        - fio_benchmark_read_iops_round_*
+        - fio_benchmark_write_throughput_round_*
+        - fio_benchmark_read_throughput_round_*
+    register: find_logs
+
+  - name: "Ensure there are some logs"
+    assert:
+      that: "find_logs.files|length != 0"

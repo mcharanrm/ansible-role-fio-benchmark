@@ -1,0 +1,4 @@
+---
+repository:
+  description: Run FIO disk performance test
+  topics: fio, performance, storage, testing, ansible, role
