@@ -1,0 +1,22 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include run_fio_benchmark"
+      include_role:
+        name: "run_fio_benchmark"
+      vars:
+        fiotest_directory: '/tmp/fiotest'
+        fiotest_rounds: 1
+        fiotest_retry_attempt: 1
+        fiotest_retry_delay: 1
+        fiotest_rw_throughput_numjobs: 1
+        fiotest_rw_throughput_jobsize: '10k'
+        fiotest_rw_throughput_runtime: '1s'
+        fiotest_rw_throughput_block_size: '1k'
+        fiotest_rw_throughput_iodepth: 2
+        fiotest_rw_iops_numjobs: 1
+        fiotest_rw_iops_jobsize: '10k'
+        fiotest_rw_iops_runtime: '1s'
+        fiotest_rw_iops_block_size: '1k'
+        fiotest_rw_iops_iodepth: 2

@@ -1,5 +1,5 @@
 galaxy_info:
-  role_name: deploy_exporter
+  role_name: run_fio_benchmark
   author: Charan Raj Musali
   description: Run FIO disk performance test
   company: Red Hat

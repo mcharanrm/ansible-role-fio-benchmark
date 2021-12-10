@@ -3,50 +3,45 @@
   template:
     src: run_fio_benchmark_sh.j2
     dest: "{{ fio_script_file }}"
+    mode: "0744"
     force: on
   register: template_script_result
 
-- name: Deploy fio benchmark service file
-  template:
-    src: run_fio_benchmark_service.j2
-    dest: "{{ fio_service_file }}"
-    force: on
-  register: template_service_result
-
-- name: Start the fio benchmark execution
-  systemd:
-    name: fio
-    state: started
-    daemon_reload: yes
-  register: service_fio_result
-
-- name: Wait for fio benchmark to complete its execution
-  ansible.builtin.service_facts:
-  register: services_state
-  until: services_state.ansible_facts.services is defined and services_state.ansible_facts.services['fio.service'].state != "running"
-  retries: "{{ fiotest_retry_attempt }}"
-  delay: "{{ fiotest_retry_delay }}"
+- name: Execute the fio benchmark
+  command: "{{ fio_script_file }}"
+  async: 36000
+  poll: 30
+  tags:
+    - molecule-idempotence-notest
 
 #print average write/read throughput and average write/read IOPs to stdout
 - name: Get the Write IOPS
   shell: |
+    set -o pipefail
     cat /tmp/fio_benchmark_write_iops_round_* | sed -n -r -e '/^[[:space:]]+iops/ s/[[:space:]]|iops|://gp'
   register: shell_fio_write_iops
+  changed_when: False
 
 - name: Get the Read IOPS
   shell:
+    set -o pipefail
     cat /tmp/fio_benchmark_read_iops_round_* | sed -n -r -e '/^[[:space:]]+iops/ s/[[:space:]]|iops|://gp'
   register: shell_fio_read_iops
+  changed_when: False
 
 - name: Get the Write Throughput
   shell:
+    set -o pipefail
     cat /tmp/fio_benchmark_write_throughput_round_* | sed -n -r '/READ|WRITE/ p'|awk -F ',' '{print $2}'
   register: shell_fio_write_throughput
+  changed_when: False
 
 - name: Get the Read Throughput
   shell:
+    set -o pipefail
     cat /tmp/fio_benchmark_read_throughput_round_* | sed -n -r '/READ|WRITE/ p'|awk -F ',' '{print $2}'
   register: shell_fio_read_throughput
+  changed_when: False
 
 - name: Results - Write IOPS of the disk
   debug:
